@@ -8,10 +8,9 @@ class RiskTakingBot(Bot):
     Schnapsen bot, with a risk taking strategy.
     Playing the high cards first in order to win the game as quick as possible.
     """
-    
+
     def get_move(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
 
-        # if perspective.get_phase() == GamePhase.TWO:
         if leader_move == None:
             return self.get_highest_scoring_move(perspective, leader_move)
         else:

@@ -10,12 +10,10 @@ class RiskTakingBot(Bot):
         Playing the high cards first in order to win the game as quick as possible.
         """
 
-        if self.condition1(perspective, leader_move):
-            return self.action1(perspective, leader_move)
-        elif self.condition2(perspective, leader_move):
-            if self.condition3(perspective, leader_move):
-                return self.action2(perspective, leader_move)
-            else:
-                return self.action3(perspective, leader_move)
-        else:
-            return self.action4(perspective, leader_move)
+        return self.condition1(perspective, leader_move)
+
+    def condition1(self, perspective: PlayerPerspective, leader_move: Move | None) -> bool:
+        moves = perspective.valid_moves()
+        trump_suit = perspective.get_trump_suit()
+
+        return moves[0]

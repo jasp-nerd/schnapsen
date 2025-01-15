@@ -11,4 +11,4 @@ if __name__ == "__main__":
         bot1 = RiskTakingBot()
         # bot1 = s.make_gui_bot(name="mybot1")
         bot2 = s.make_gui_bot(name="mybot2")
-        engine.play_game(bot1, bot2, random.Random(100))
+        engine.play_game(bot1, bot2, random.Random(113))

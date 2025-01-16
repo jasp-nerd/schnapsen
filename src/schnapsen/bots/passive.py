@@ -1,140 +1,129 @@
 from schnapsen.game import Bot, Move, PlayerPerspective
-# other needed imports here. Most likely you need:
 from schnapsen.game import SchnapsenTrickScorer
 from schnapsen.deck import Card, Suit, Rank
 
-
-class AssignmentBot(Bot):
-    """Your suit order is [HEARTS, CLUBS, DIAMONDS, SPADES], from lower suit to higher suit."""
-
-
+class LaidBackBot(Bot):
+    """
+    Schnapsen bot with a laid back strategy.
+    Playing the low cards first in order to minimize risk.
+    """
     def get_move(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
-        """Get the move for the Bot.
-        The basic structure for your bot is already implemented and must not be modified.
-        To implement your bot, only modify the condition and action methods below.
-        """
-        if self.condition1(perspective, leader_move):
-            return self.action1(perspective, leader_move)
-        elif self.condition2(perspective, leader_move):
-            if self.condition3(perspective, leader_move):
-                return self.action2(perspective, leader_move)
-            else:
-                return self.action3(perspective, leader_move)
+        
+        # If we're in phase 2, delegate to a perfect information strategy
+        # if perspective.get_phase() == GamePhase.TWO:
+        #     return self.get_phase_two_move(perspective, leader_move)
+        
+        # Original phase 1 strategy
+        if leader_move is None:
+            return self.get_lowest_scoring_move(perspective, leader_move)
         else:
-            return self.action4(perspective, leader_move)
-
-    def condition1(self, perspective: PlayerPerspective, leader_move: Move | None) -> bool:
-        valid_moves = perspective.valid_moves()
-        for move in valid_moves:
-            if move.is_marriage():
-                marriage = move.as_marriage()
-                if marriage.suit == Suit.HEARTS:
-                    return True
-        return False
-
-    def condition2(self, perspective: PlayerPerspective, leader_move: Move | None) -> bool:
-        """2. otherwise, if the 🂱 (ACE_HEARTS) has not been won yet by either bot [1 point]"""
-        played_cards = perspective.get_won_cards()
-        played_cards2 = perspective.get_opponent_won_cards()
-        if Card.ACE_HEARTS not in played_cards and Card.ACE_HEARTS not in played_cards2:
-            return True
-        return False
-            
-    def condition3(self, perspective: PlayerPerspective, leader_move: Move | None) -> bool:
-        hand = perspective.get_hand()
+            return self.follow_suit(perspective, leader_move)
     
-        if len(hand) < 1:
-            return False
-            
-        points = SchnapsenTrickScorer()
-        points_sum = 0
-        all_cards = 0
-        
-        for card in hand.get_cards():
-            points2 = points.rank_to_points(card.rank)
-            points_sum += points2
-            all_cards += 1
-
-        average = points_sum / all_cards
-        if average < 8.0:
-            return True
-        return False
-
-    def action1(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
-        """   then play the HEARTS marriage  [1.5 point]"""
-        valid_moves = perspective.valid_moves()
-    
-        for move in valid_moves:
-            if move.is_marriage():
-                marriage = move.as_marriage()
-                if marriage.suit == Suit.HEARTS:
-                    return move
-
-    def action2(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
-        """                     then play the valid regular move where the card has the lowest suit according
-                          to the suit order above. If multiple cards have the lowest suit,
-                          prioritize according to lowest points. [1.5 points]"""
+    def get_lowest_scoring_move(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
+        """
+        If we have the first move, we should play moves with the lowest points:
+        First check for marriages (as they score points), then non-trump low cards,
+        and finally trump cards if necessary.
+        """
+        scorer = SchnapsenTrickScorer()
         moves = perspective.valid_moves()
+        trump_suit = perspective.get_trump_suit()
         
-        hearts_moves = []
-        clubs_moves = []
-        diamonds_moves = []
-        spades_moves = []
-
+        # first check if we can do a trump exchange
         for move in moves:
-            if not move.is_regular_move():  
-                continue
-            card = move.as_regular_move().card
-            if card.suit == Suit.HEARTS:
-                hearts_moves.append(move)
-            elif card.suit == Suit.CLUBS:
-                clubs_moves.append(move)
-            elif card.suit == Suit.DIAMONDS:
-                diamonds_moves.append(move)
+            if move.is_trump_exchange():
+                return move
+        
+        # then check if we have a marriage
+        for move in moves:
+            if move.is_marriage():
+                return move
+        
+        lowest_move = None
+        lowest_score = float('inf')
+        lowest_trump_move = None
+        lowest_trump_score = float('inf')
+        
+        for move in moves:
+            score = scorer.rank_to_points(move.cards[0].rank)
+            
+            # handle trump cards separately
+            if move.cards[0].suit == trump_suit:
+                if score < lowest_trump_score:
+                    lowest_trump_score = score
+                    lowest_trump_move = move
             else:
-                spades_moves.append(move)
+                if score < lowest_score:
+                    lowest_score = score
+                    lowest_move = move
+        
+        # never play trump cards when we have other options
+        if lowest_move is not None:
+            return lowest_move
+        # only play trump as an absolute last resort when we have no other choice
+        return lowest_trump_move
     
+    def follow_suit(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
         scorer = SchnapsenTrickScorer()
-        
-        if len(hearts_moves) > 0:
-            moves = sorted(hearts_moves, key=lambda m: scorer.rank_to_points(m.as_regular_move().card.rank))
-            return moves[0]
-        elif len(clubs_moves) > 0:
-            moves = sorted(clubs_moves, key=lambda m: scorer.rank_to_points(m.as_regular_move().card.rank))
-            return moves[0]
-        elif len(diamonds_moves) > 0:
-            moves = sorted(diamonds_moves, key=lambda m: scorer.rank_to_points(m.as_regular_move().card.rank))
-            return moves[0]
-        elif len(spades_moves) > 0:
-            moves = sorted(spades_moves, key=lambda m: scorer.rank_to_points(m.as_regular_move().card.rank))
-            return moves[0]
-    
-  
-
-    def action3(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
-        """                  b. otherwise find the most frequent suit among the cards in valid regular moves.
-                               If multiple suits have the same most frequency, prioritize according
-                               to the suit order above. Among these cards, play the one with the
-                               lowest points. [2.0 points]"""
-        
-        pass
-
-    def action4(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
-        """3. otherwise take the cards in valid regular moves and order them by points (low to high); in this
-             ordering, if two cards have the same points, sort these according to the suit order.
-             Now, play the card in the middle of the sequence. If the number of cards is even, play
-             the card right below the middle. [1.5 points]"""
         moves = perspective.valid_moves()
-        scorer = SchnapsenTrickScorer()
+        trump_suit = perspective.get_trump_suit()
+        leader_card = leader_move.cards[0]
+        leader_score = scorer.rank_to_points(leader_card.rank)
         
-        sorted_moves = []
+        def get_move_points(move: Move) -> int:
+            return scorer.rank_to_points(move.cards[0].rank)
+        
+        # categorize our moves
+        following_moves = [] # cards of the same suit
+        non_trump_moves = [] # cards of other suits (excluding trump)
+        trump_moves = [] # trump cards
+        
         for move in moves:
-            if move.is_regular_move():
-                card = move.as_regular_move().card
-                points = scorer.rank_to_points(card.rank)
-                suit_value = [Suit.HEARTS, Suit.CLUBS, Suit.DIAMONDS, Suit.SPADES].index(card.suit)
-                sorted_moves.append([points, suit_value, move])
+            card = move.cards[0]
+            if card.suit == leader_card.suit:
+                following_moves.append(move)
+            elif card.suit == trump_suit:
+                trump_moves.append(move)
+            else:
+                non_trump_moves.append(move)
         
-        new_sorted_moves = sorted(sorted_moves, key=lambda x: (x[0], x[1]))
-        middle_index = (len(new_sorted_moves) - 1) // 2
-        return new_sorted_moves[middle_index][2]
+        # if we can follow suit
+        if following_moves:
+            # sort by top to bottom points
+            following_moves.sort(key=get_move_points)
+            
+            # find moves that can win
+            winning_moves = []
+            for m in following_moves:
+                if get_move_points(m) > leader_score:
+                    winning_moves.append(m)
+            
+            if not winning_moves:
+                # if we can't win, play our lowest card
+                return following_moves[0]
+            else:
+                # if we must win, play the lowest winning card
+                return winning_moves[0]
+            
+        # if we can't follow suit, prefer lowest non-trump card
+        if non_trump_moves:
+            lowest_move = non_trump_moves[0]
+            lowest_points = get_move_points(lowest_move)
+            for move in non_trump_moves[1:]:
+                points = get_move_points(move)
+                if points < lowest_points:
+                    lowest_move = move
+                    lowest_points = points
+            return lowest_move
+        
+        # as a last resort, play lowest trump card
+        if trump_moves:
+            lowest_move = trump_moves[0]
+            lowest_points = get_move_points(lowest_move)
+            for move in trump_moves[1:]:
+                points = get_move_points(move)
+                if points < lowest_points:
+                    lowest_move = move
+                    lowest_points = points
+            return lowest_move
+        

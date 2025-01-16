@@ -9,5 +9,6 @@ from .gui.guibot import SchnapsenServer
 from .minimax import MiniMaxBot
 from .bully_bot import BullyBot
 from .aggresive import RiskTakingBot
+from .passive import LaidBackBot
 
-__all__ = ["RandBot", "AlphaBetaBot", "RdeepBot", "MLDataBot", "MLPlayingBot", "train_ML_model", "SchnapsenServer", "MiniMaxBot", "BullyBot", "RiskTakingBot"]
+__all__ = ["RandBot", "AlphaBetaBot", "RdeepBot", "MLDataBot", "MLPlayingBot", "train_ML_model", "SchnapsenServer", "MiniMaxBot", "BullyBot", "RiskTakingBot", "LaidBackBot"]

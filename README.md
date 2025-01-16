@@ -1,9 +1,9 @@
 # Schnapsen Game Bot Project
 
 ## About This Project
-This is my school project where I added two new bots to play the card game Schnapsen. I forked this project from my teacher's original repository and added my own bot implementations.
+This is my school project where me and skick added two new bots to play the card game Schnapsen. We forked this project from my teacher's original repository and added our own bot implementations.
 
-## What I Added
+## What We Added
 1. **Aggressive Bot (RiskTakingBot)**
    - Takes more risks by playing high-value cards first
    - Always tries to win tricks when possible

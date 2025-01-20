@@ -24,7 +24,7 @@ class RiskTakingBot(Bot):
         scorer = SchnapsenTrickScorer()
         moves = perspective.valid_moves()
         trump_suit = perspective.get_trump_suit()
-        print(moves)
+        # print(moves)
 
         highest_move = None
         highest_score = 0
@@ -51,7 +51,7 @@ class RiskTakingBot(Bot):
                 highest_score = score_of_card
                 highest_move = move
 
-        print(highest_trump_move, ', ', highest_move)
+        # print(highest_trump_move, ', ', highest_move)
 
         # if we have a trump move, play it
         if highest_trump_move != None:
@@ -69,7 +69,7 @@ class RiskTakingBot(Bot):
         scorer = SchnapsenTrickScorer()
         moves = perspective.valid_moves()
         trump_suit = perspective.get_trump_suit()
-        print(moves)
+        # print(moves)
 
         highest_move = None
         highest_score = 0
@@ -84,7 +84,7 @@ class RiskTakingBot(Bot):
                     highest_move = move
 
         if highest_move != None:
-            print(highest_move)
+            # print(highest_move)
             return highest_move
         
         # if it cannot win the move, play the lowest card
@@ -100,7 +100,7 @@ class RiskTakingBot(Bot):
         if lowest_move == None:
             lowest_move = moves[0]
 
-        print(lowest_move)
+        # print(lowest_move)
         return lowest_move
 
 

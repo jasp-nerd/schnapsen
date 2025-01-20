@@ -1,19 +1,25 @@
 from schnapsen.game import SchnapsenGamePlayEngine
 from schnapsen.bots import RandBot
-from schnapsen.bots.passive import LaidBackBot
-from schnapsen.bots.aggresive import RiskTakingBot
+from schnapsen.bots import RdeepBot
+from schnapsen.bots import LaidBackBot
+from schnapsen.bots import RiskTakingBot
 import random
+
+random.seed(122)
 
 engine = SchnapsenGamePlayEngine()
 
-myrepeats = 1000  
+myrepeats = 100
 
 # Create bots
 bot1 = LaidBackBot(name="LaidBackBot")
 bot2 = RiskTakingBot(name="RiskTakingBot")
 bot3 = RandBot(rand=random.Random(42), name="RandBot")
+bot4 = RdeepBot(num_samples=10, depth=10, rand=random.Random(455), name="RdeepBot")
 
-bots = [bot1, bot2]
+# remove or add the bots you want to this list
+
+bots = [bot1, bot2, bot3, bot4]
 n = len(bots)
 wins = {str(bot): 0 for bot in bots}
 matches = [(p1, p2) for p1 in range(n) for p2 in range(n) if p1 < p2]

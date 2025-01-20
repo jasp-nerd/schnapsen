@@ -9,7 +9,7 @@ random.seed(122)
 
 engine = SchnapsenGamePlayEngine()
 
-myrepeats = 100
+myrepeats = 10
 
 # Create bots
 bot1 = LaidBackBot(name="LaidBackBot")
@@ -27,8 +27,11 @@ matches = [(p1, p2) for p1 in range(n) for p2 in range(n) if p1 < p2]
 totalgames = (n * n - n) / 2 * myrepeats
 playedgames = 0
 
+total_win = []
+
 print("Playing {} games:".format(int(totalgames)))
 for a, b in matches:
+    amount_win = {}
     for r in range(myrepeats):
         if random.choice([True, False]):
             p = [a, b]
@@ -47,4 +50,14 @@ for a, b in matches:
                 playedgames, totalgames, playedgames / float(totalgames) * 100, wins
             ),
         )
+
+        if amount_win == {}:
+            amount_win = {str(bots[p[0]]): 0, str(bots[p[1]]): 0}
+
+        amount_win[str(winner_id)] += game_points
+
+    total_win.append(amount_win)
+
+print(total_win)
+
 

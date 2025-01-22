@@ -5,11 +5,11 @@ from schnapsen.bots import LaidBackBot
 from schnapsen.bots import RiskTakingBot
 import random
 
-random.seed(122)
+random.seed(155)
 
 engine = SchnapsenGamePlayEngine()
 
-myrepeats = 100
+myrepeats = 1000
 
 # Create bots
 bot1 = LaidBackBot(name="LaidBackBot")
